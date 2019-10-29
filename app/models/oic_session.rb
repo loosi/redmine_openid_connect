@@ -46,7 +46,7 @@ class OicSession < ActiveRecord::Base
     self.class.dynamic_config
   end
 
-  def self.client
+  def self.client(redirect_uri = nil )
     return @client if @client
 
     if client_config['disable_ssl_validation']
@@ -55,10 +55,15 @@ class OicSession < ActiveRecord::Base
       end
     end
 
+    if redirect_uri.nil? or redirect_uri == "/"
+      redirect = ""
+    else
+      redirect = "?back_url="+CGI::escape(host_name+redirect_uri)
+    end
     @client = OpenIDConnect::Client.new(
       identifier: client_config['client_id'],
       secret: client_config['client_secret'],
-      redirect_uri: "#{host_name}/oic/local_login",
+      redirect_uri: "#{host_name}/oic/local_login#{redirect}",
       authorization_endpoint: dynamic_config.authorization_endpoint,
       token_endpoint: dynamic_config.token_endpoint,
       userinfo_endpoint: dynamic_config.userinfo_endpoint,
@@ -67,8 +72,8 @@ class OicSession < ActiveRecord::Base
     )
   end
 
-  def client
-    self.class.client
+  def client(redirect_uri = nil )
+    self.class.client(redirect_uri)
   end
 
   def self.get_token()
@@ -156,8 +161,8 @@ class OicSession < ActiveRecord::Base
     return @user
   end
 
-  def authorization_url
-    client.authorization_uri(
+  def authorization_url(redirect_uri)
+    client(redirect_uri).authorization_uri(
       {
         response_type: :code,
         scope: scopes,

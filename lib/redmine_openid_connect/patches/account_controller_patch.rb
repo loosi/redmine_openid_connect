@@ -6,7 +6,7 @@ module RedmineOpenidConnect
         return super
       end
 
-      redirect_to oic_login_url
+      redirect_to oic_login_url+"?origin=#{request.fullpath}"
     end
 
     def logout
@@ -47,7 +47,7 @@ module RedmineOpenidConnect
         end
       end
 
-      redirect_to oic_session.authorization_url
+      redirect_to oic_session.authorization_url(params[:origin])
     end
 
     def oic_local_logout

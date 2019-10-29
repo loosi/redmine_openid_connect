@@ -4,7 +4,7 @@ module RedmineOpenidConnect
       return super unless OicSession.enabled?
 
       if !User.current.logged?
-        redirect_to oic_login_url
+        redirect_to oic_login_url+"?origin=#{request.fullpath}"
         return false
       end
     end
